@@ -1,0 +1,79 @@
+﻿@page "/"
+
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider authenticationStateProvider
+@inject System.DirectoryServices.AccountManagement.PrincipalContext principalContext
+
+<!-- Ajoutez la directive using ici -->
+@using System.Security.Claims;
+@using System.DirectoryServices.AccountManagement
+@using System.DirectoryServices.AccountManagement.PrincipalExtensions
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<SurveyPrompt Title="How is Blazor working for you?" />
+
+
+<h3>Informations de l'utilisateur Active Directory</h3>
+
+@if (UserDetails != null)
+{
+    <p>Nom d'utilisateur: @UserDetails.SamAccountName</p>
+    <p>Nom complet: @UserDetails.DisplayName</p>
+    <p>Email: @UserDetails.EmailAddress</p>
+
+    <h4>Rôles:</h4>
+
+     @foreach (var group in UserDetails.GetGroups())
+        {
+            <p>@group.SamAccountName</p>
+        }
+   
+}
+else
+{
+    <p>Utilisateur non trouvé.</p>
+}
+
+
+
+@code {
+    private System.DirectoryServices.AccountManagement.UserPrincipal UserDetails { get; set; }
+
+   protected override async Task OnInitializedAsync()
+{
+    var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+    var user = authState.User;
+
+    if (user.Identity.IsAuthenticated)
+    {
+        var emailClaim = user.FindFirst(ClaimTypes.Email);
+
+        if (emailClaim != null)
+        {
+            // Recherche par e-mail
+            using (var searcher = new PrincipalSearcher(new UserPrincipal(principalContext)))
+            {
+                var userPrincipal = new UserPrincipal(principalContext)
+                {
+                    EmailAddress = emailClaim.Value
+                };
+
+                var searchResult = searcher.FindOne(userPrincipal);
+
+                if (searchResult != null && searchResult is UserPrincipal foundUser)
+                {
+                    UserDetails = foundUser;
+                    Console.WriteLine($"UserDetails: {UserDetails}");
+                }
+            }
+        }
+    }
+
+    await base.OnInitializedAsync();
+ }
+
+}

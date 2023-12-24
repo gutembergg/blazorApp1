@@ -1,0 +1,42 @@
+﻿@inherits LayoutComponentBase
+
+@inject AuthenticationStateProvider _authenticationStateProvider
+@inject NavigationManager _navigationManager
+
+<AuthorizeView>
+    <NotAuthorized>
+        <RedirectToLogin IsFromMainLayout="true" />
+    </NotAuthorized>
+</AuthorizeView>
+
+<PageTitle>BlazorApp1</PageTitle>
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+    <main>
+        <div class="top-row px-4">
+            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+  protected override async Task OnAfterRenderAsync(bool firstRender) {
+    if (firstRender) {
+      // --- first connection - does the user exist? If not, create user (with current user id) and lead to settings
+      var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
+      var user = authState.User;
+      if (user == null || !user.Identity.IsAuthenticated) {
+        _navigationManager.NavigateTo("Identity/Account/Login", true);
+      }
+      StateHasChanged();
+    }
+    await base.OnAfterRenderAsync(firstRender);
+  }
+}

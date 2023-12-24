@@ -1,0 +1,12 @@
+﻿@inject NavigationManager Navigation
+
+@code {
+  [Parameter] public bool IsFromMainLayout { get; set; }
+  protected override void OnInitialized() {
+    if (IsFromMainLayout) {
+      Navigation.NavigateTo("Identity/Account/Login", true);
+    } else {
+      Navigation.NavigateTo("Identity/Account/Login?returnUrl=" + Uri.EscapeDataString(Navigation.Uri), true);
+    }
+  }
+}
