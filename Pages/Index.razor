@@ -6,7 +6,7 @@
 <!-- Ajoutez la directive using ici -->
 @using System.Security.Claims;
 @using System.DirectoryServices.AccountManagement
-@using System.DirectoryServices.AccountManagement.PrincipalExtensions
+<!--@using System.DirectoryServices.AccountManagement.PrincipalExtensions-->
 
 <PageTitle>Index</PageTitle>
 
@@ -43,7 +43,7 @@ else
 @code {
     private System.DirectoryServices.AccountManagement.UserPrincipal UserDetails { get; set; }
 
-   protected override async Task OnInitializedAsync()
+protected override async Task OnInitializedAsync()
 {
     var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
     var user = authState.User;
@@ -55,14 +55,16 @@ else
         if (emailClaim != null)
         {
             // Recherche par e-mail
-            using (var searcher = new PrincipalSearcher(new UserPrincipal(principalContext)))
+            using (var searcher = new PrincipalSearcher())
             {
                 var userPrincipal = new UserPrincipal(principalContext)
                 {
                     EmailAddress = emailClaim.Value
                 };
 
-                var searchResult = searcher.FindOne(userPrincipal);
+                searcher.QueryFilter = userPrincipal;
+
+                var searchResult = searcher.FindOne();
 
                 if (searchResult != null && searchResult is UserPrincipal foundUser)
                 {
@@ -74,6 +76,7 @@ else
     }
 
     await base.OnInitializedAsync();
- }
+}
+
 
 }
