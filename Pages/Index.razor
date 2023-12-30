@@ -6,7 +6,7 @@
 <!-- Ajoutez la directive using ici -->
 @using System.Security.Claims;
 @using System.DirectoryServices.AccountManagement
-<!--@using System.DirectoryServices.AccountManagement.PrincipalExtensions-->
+
 
 <PageTitle>Index</PageTitle>
 
@@ -17,27 +17,11 @@ Welcome to your new app.
 <SurveyPrompt Title="How is Blazor working for you?" />
 
 
-<h3>Informations de l'utilisateur Active Directory</h3>
+<h3>User informations Active Directory</h3>
 
-@if (UserDetails != null)
-{
-    <p>Nom d'utilisateur: @UserDetails.SamAccountName</p>
-    <p>Nom complet: @UserDetails.DisplayName</p>
-    <p>Email: @UserDetails.EmailAddress</p>
-
-    <h4>Rôles:</h4>
-
-     @foreach (var group in UserDetails.GetGroups())
-        {
-            <p>@group.SamAccountName</p>
-        }
-   
-}
-else
-{
-    <p>Utilisateur non trouvé.</p>
-}
-
+<h4>SamAccountName: @UserDetails.SamAccountName</h4>
+<h4>DisplayName: @UserDetails.DisplayName</h4>
+<h4>EmailAddress: @UserDetails.EmailAddress</h4>
 
 
 @code {
@@ -64,13 +48,31 @@ protected override async Task OnInitializedAsync()
 
                 searcher.QueryFilter = userPrincipal;
 
-                var searchResult = searcher.FindOne();
+              var searchResult = searcher.FindOne();
 
-                if (searchResult != null && searchResult is UserPrincipal foundUser)
+            if (searchResult != null)
+            {
+                var foundUser = searchResult as UserPrincipal;
+
+                if (foundUser != null)
                 {
                     UserDetails = foundUser;
                     Console.WriteLine($"UserDetails: {UserDetails}");
+                    Console.WriteLine($"SamAccountName: {UserDetails.SamAccountName}");
+                    Console.WriteLine($"DisplayName: {UserDetails.DisplayName}");
+                    Console.WriteLine($"EmailAddress: {UserDetails.EmailAddress}");
+                    
+                    
+                    /* Get user groups, commented because it takes a bit more time */
+                    /* var userGroups = UserDetails.GetGroups(); */
+
+                    /* if(userGroups !== null)
+                    {
+                        Console.WriteLine($"Groups: {string.Join(", ", userGroups.Select(group => group.Name))}");
+                    } */
                 }
+            }
+
             }
         }
     }
